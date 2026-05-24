@@ -1,5 +1,8 @@
 # StudyMind — AI Study & Homework Helper
 
+
+Live demo: https://ai-study-helper-drab.vercel.app
+
 An AI-powered web app that helps students study smarter.
 Upload your lecture notes or paste any text, then ask questions,
 get explanations, and auto-generate quizzes — all grounded in
@@ -25,3 +28,4 @@ uvicorn main:app --reload
 
 # Frontend
 cd frontend && npm install && npm run dev
+

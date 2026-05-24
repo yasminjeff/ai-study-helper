@@ -6,7 +6,10 @@ app = FastAPI(title="Study Helper API")
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:5173"],  # Vite dev server
+    allow_origins=[
+    "http://localhost:5173",
+    "https://ai-study-helper-drab.vercel.app",
+    ],  # Vite dev server
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],

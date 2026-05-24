@@ -3,8 +3,13 @@ import json
 from openai import AsyncOpenAI
 from dotenv import load_dotenv
 
-load_dotenv()
-client = AsyncOpenAI(api_key=os.getenv("OPENAI_API_KEY"))
+from pathlib import Path
+load_dotenv(dotenv_path=Path(__file__).parent.parent / ".env")
+
+client = AsyncOpenAI(
+    api_key=os.getenv("GROQ_API_KEY"),
+    base_url="https://api.groq.com/openai/v1",
+)
 
 SYSTEM_PROMPT = """You are a helpful study assistant.
 When the user provides notes or text, answer ONLY based on that content.
@@ -12,7 +17,6 @@ If the answer is not in the provided material, say so clearly — do not make th
 Be concise, clear, and student-friendly."""
 
 async def stream_chat_response(message: str, context: str, history: list[dict]):
-    """Stream tokens from OpenAI as Server-Sent Events."""
     messages = [{"role": "system", "content": SYSTEM_PROMPT}]
 
     if context:
@@ -25,14 +29,13 @@ async def stream_chat_response(message: str, context: str, history: list[dict]):
             "content": "Got it! I'll answer your questions based on these notes."
         })
 
-    # Append conversation history
-    for msg in history[-10:]:  # keep last 10 turns to manage tokens
+    for msg in history[-10:]:
         messages.append(msg)
 
     messages.append({"role": "user", "content": message})
 
     stream = await client.chat.completions.create(
-        model="gpt-4o-mini",   # cheap + fast, swap to gpt-4o for better quality
+        model="llama-3.3-70b-versatile",
         messages=messages,
         stream=True,
     )
@@ -46,7 +49,6 @@ async def stream_chat_response(message: str, context: str, history: list[dict]):
 
 
 async def generate_quiz(context: str, num_questions: int) -> list[dict]:
-    """Generate MCQ quiz questions from study notes."""
     prompt = f"""
 Create {num_questions} multiple-choice quiz questions based ONLY on the content below.
 
@@ -65,12 +67,11 @@ Content:
 {context[:8000]}
 """
     response = await client.chat.completions.create(
-        model="gpt-4o-mini",
+        model="llama-3.3-70b-versatile",
         messages=[{"role": "user", "content": prompt}],
         temperature=0.7,
     )
 
     raw = response.choices[0].message.content.strip()
-    # Strip markdown fences if present
     raw = raw.replace("```json", "").replace("```", "").strip()
     return json.loads(raw)
